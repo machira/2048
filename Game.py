@@ -1,11 +1,9 @@
 __author__ = 'Raymond Machira <raymond.machira@gmail.com>'
 
-###
+# ##
 ### A 2048 solver, using MiniMax with A-B pruning.
 ###
 from operator import itemgetter
-from Board import Board
-
 
 # move across all unoccupied cells
 # Check for any similar cells and collapse sequentially.

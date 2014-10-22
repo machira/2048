@@ -1,11 +1,13 @@
 __author__ = 'macharir'
 
 import unittest
+
 from Board import Board
-from Game import  Game
+from Game import Game
+
 
 class MyTestCase(unittest.TestCase):
-    game  = Game()
+    game = Game()
 
     def test_move_left(self):
         board1 = Board(board_size=4)
