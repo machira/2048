@@ -138,28 +138,29 @@ def moveUPDOWN(board, move, collapse = True):
 
     return board
 
-def test_move():
-    # board1 = Board()
-    # board1.board[0][1] = 2
-    # board1.board[0][3] = 2
-    #
-    # moveLEFTRIGHT(board1,LEFT)
-    # assert(board1.board == [[4,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
-    #
+def test_move_left():
+    board1 = Board()
+    board1.board[0][1] = 2
+    board1.board[0][3] = 2
+
+    moveLEFTRIGHT(board1,LEFT)
+    assert(board1.board == [[4,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
+
+def test_move_right():
     board2 = Board()
     board2.board[0][1] = 2
     board2.board[0][3] = 2
     moveLEFTRIGHT(board2,RIGHT)
     assert(board2.board == [[0,0,0,4],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 
-
+def test_move_up():
     board3 = Board()
     board3.board[0][2] = 2
     board3.board[1][2] = 2
     moveUPDOWN(board3,UP)
     assert(board3.board == [[0,0,4,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 
-
+def test_move_down():
     board4 = Board()
     board4.board[0][2] = 2
     board4.board[1][2] = 2
@@ -178,7 +179,10 @@ if __name__ == '__main__':
     #     print row
     #
     # b = moveLEFTRIGHT(board,RIGHT).board
-    test_move()
+    test_move_left()
+    test_move_right()
+    test_move_down()
+    test_move_up()
 
     # for row in b:
     #     print row
