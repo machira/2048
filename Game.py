@@ -16,95 +16,41 @@ class Game():
     # left right up down
     LEFT = -1
     RIGHT = 1
-    UP = -1
-    DOWN = 1
+    UP = -4
+    DOWN = 4
     MOVES = [LEFT, RIGHT, UP, DOWN]
 
-    def moveLEFTRIGHT(self,board, move, collapse=True):
+    def make_move(self,board, move, collapse=True):
         """
         :param board:
         :param move:
         :return:
         """
+        limits = []
+
+        if move == self.LEFT:
+            limits = [board.board_size * i for i in range(0,board.board_size)]
+        elif move == self.RIGHT:
+            limits = [(board.board_size * i)-1 for i in range(1,board.board_size+1)]
+        elif move == self.UP:
+            limits =  range(0,board.board_size)
+        elif move == self.DOWN:
+            limits = [i for i in range(board.board_size * (board.board_size-1), board.board_size*board.board_size)]
+
 
         # empty_cells = board.empty_cells()
         occupied_cells = board.occupied_cells()
-        occupied_cells.sort(key=itemgetter(1), reverse= move==self.RIGHT)
-
-        print occupied_cells
-        # works only for left moves for now.
+        # sort the cells to start at the right end
+        occupied_cells.sort(reverse= move > 0)
         for cell in occupied_cells:
-            new_pos = (-1,-1)
-            new_col = cell[1]+move
-            while(-1 < new_col < board.board_size):
-                if board.board[cell[0]][new_col] == 0:
-                    new_pos = (cell[0],new_col)
+            move_to = cell
+            while(move_to not in limits):
+                if board.board[cell+move] == 0 or board.board[cell+move] == board.board[cell]:
+                    move_to += move
                 else:
                     break
-                new_col = new_col + move
-            # move
-            if new_pos != (-1,-1):
-                item = board.board[cell[0]][cell[1]]
-                board.board[cell[0]][cell[1]] = 0
-                board.board[new_pos[0]][new_pos[1]] = item
-
-        # collapses adjacent, similar values into the same cell, in the direction of the move.
-        if(collapse):
-            # for each occupied cell, except the first column, for left moves and last column for right moves
-            # check the cell to its right or left, as necessary
-            # update list of occupied cells
-            cells = board.occupied_cells()
-            for cell in [(row,col) for row,col in cells if (col != 0 and move==self.LEFT) or (col != board.board_size-1 and move ==self.RIGHT)]:
-                # if they are similar
-                if board.board[cell[0]][cell[1]] == board.board[cell[0]][cell[1]+move]:
-                    # double the value of the cell
-                    board.board[cell[0]][cell[1]+move] += board.board[cell[0]][cell[1]+move]
-                    board.board[cell[0]][cell[1]] = 0
-            # clean up the board, with one last pass
-            self.moveLEFTRIGHT(board,move,collapse=False)
-
-        return board
-
-    def moveUPDOWN(self,board, move, collapse = True):
-        """
-        :param board:
-        :param move:
-        :return:
-        """
-
-        # empty_cells = board.empty_cells()
-        occupied_cells=board.occupied_cells()
-
-        ## sort the occupied cells, depending on the direction of movement.
-
-        occupied_cells.sort(key=itemgetter(0), reverse=move==self.DOWN)
-        print occupied_cells
-        # works only for left moves for now.
-        for cell in occupied_cells:
-            new_pos = (-1,-1)
-            new_row = cell[0]+move
-            while(-1 < new_row < board.board_size):
-                if board.board[new_row][cell[1]]==0:
-                    new_pos=(new_row,cell[1])
-                else:
-                    break
-                new_row=new_row + move
-            # move
-            if new_pos != (-1,-1):
-                item = board.board[cell[0]][cell[1]]
-                board.board[cell[0]][cell[1]] = 0
-                board.board[new_pos[0]][new_pos[1]] = item
-
-        if collapse:
-            cells = board.occupied_cells()
-            for cell in [(row,col) for row,col in cells if (row != 0 and move == self.UP) or (row != board.board_size-1 and move == self.DOWN)]:
-                # if they are similar
-                if board.board[cell[0]][cell[1]]==board.board[cell[0]+move][cell[1]]:
-                    # double the value of the cell
-                    board.board[cell[0]+move][cell[1]]+=board.board[cell[0]+move][cell[1]]
-                    board.board[cell[0]][cell[1]]=0
-            # clean up the board, with one last pass
-            self.moveUPDOWN(board,move,collapse=False)
-
+            if move_to != cell:
+                board.board[move_to] +=  board.board[cell]
+                board.board[cell]  = 0 # make the old cell empty
 
         return board

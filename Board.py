@@ -1,37 +1,26 @@
 __author__ = 'Raymond Machira <raymond.machira@gmail.com>'
 import random, itertools
 
+###A board is encoded as an list of size N*N.
 
 class Board():
-    # Makes an NxN board
-    board_size = 4
+    board_size = 4 # default
+    score = 0
 
-    def __init__(self):
-        board = [None] * self.board_size
-        for i in range(self.board_size):
-            board[i] = [0] * self.board_size
+    def __init__(self, board_size=board_size):
+        board = [0] * board_size
+        self.board = board
+
+    def set_board(self,board):
         self.board = board
 
     def random_empty_cell(self):
         empty_cells = self.empty_cells()
         if len(empty_cells):
-            return empty_cells[random.randrange(0,len(empty_cells))]
+            return random.choice(empty_cells)
 
     def empty_cells(self):
-        empty = []
-        for i in range(0, self.board_size):
-            for j in range(0,self.board_size):
-                if self.board[i][j] == 0:
-                    empty.append((i,j))
-        return empty
+        return [i for i in self.board if self.board[i] == 0]
 
     def occupied_cells(self):
-        return [tpl for tpl in self.tuple_board() if tpl not in self.empty_cells()]
-
-    def tuple_board(self):
-        """
-        returns a list of the board, as tuples
-        """
-        return list(itertools.chain(*[[(i,j) for i in range(0, self.board_size)] for j in range(0, self.board_size)]))
-
-
+        return [i for i in range(0,len(self.board)) if self.board[i] != 0]
