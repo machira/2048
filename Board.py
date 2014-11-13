@@ -5,6 +5,8 @@ import itertools
 ###A board is encoded as an list of size N*N.
 
 class Board():
+    board_size = 4 # default
+    score = 0
 
     def __init__(self, board_size=board_size):
         board = [0] * board_size
