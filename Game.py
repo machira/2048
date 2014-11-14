@@ -152,8 +152,9 @@ if __name__ == '__main__':
 
         for iter in range(0,num_iterations):
             board = new_board(board_size=4)
-            num_moves_made = score = smashes = 0
-            print 'completed ',iter
+            num_moves_made = 0
+            score = 0
+            smashes = 0
             while not game_lost(board):
                 board, number_smashes, score_increment = strategy(board)
                 score += score_increment
