@@ -1,5 +1,5 @@
 __author__ = 'Raymond Machira <raymond.machira@gmail.com>'
-
+from time import sleep
 # ##
 ### A 2048 solver, using MiniMax with A-B pruning.
 ###
@@ -16,8 +16,8 @@ UP = -4
 DOWN = 4
 MOVES = [LEFT, RIGHT, UP, DOWN]
 BOARD_SIZE = 4
-WINNING_TILE = 1024
-WEIGHTED_PIECES = [(2, 50), (4, 25), (8, 12.5), (16, 6.25), (32, 6.25)]
+WINNING_TILE = 2048
+WEIGHTED_PIECES = [(2, 75), (4, 25)]#, (8, 12.5), (16, 6.25), (32, 6.25)]
 # WEIGHTED_PIECES = [(2, 100)]#, (4, 25), (8, 12.5), (16, 6.25), (32, 6.25)]
 
 def make_move(board, move):
@@ -55,14 +55,14 @@ def make_move(board, move):
                 number_smashes += 1
                 move_to += move
                 # also increment our score. I use addition instead of multiplication- a small optimization.
-                score_increment += board[cell]+board[cell]
+                score_increment += (board[cell]+board[cell])
             else:
                 break
         if move_to != cell:
             board[move_to] +=  board[cell]
             board[cell]  = 0 # make the old cell empty
 
-    return board, number_smashes, score_increment
+    return board, number_smashes, score_increment, move
 
 
 def random_empty_cell(board):
@@ -84,6 +84,12 @@ def game_lost(board):
 def game_won(board):
     return max(board) >= WINNING_TILE
 
+def show_board(board):
+    i = 0
+    while i < len(board):
+        print board[i],' ',board[i+1],' ',board[i+2],' ',board[i+3],'\n'
+        i += BOARD_SIZE
+    print '\n'
 
 ## simply returns a possible block
 def random_block():
@@ -109,13 +115,20 @@ def make_random_move(board):
     return make_move(board,move)
 
 def make_max_scoring_move(board):
+    '''
+
+    :param board:
+    :return:
+    '''
     best_move = MOVES[0]
     max_score = 0
     for move in MOVES:
-        board, number_smashes, score_increment  = make_move(board[:],move)
+        board2, number_smashes, score_increment,move  = make_move(board[:],move)
         if score_increment > max_score:
             best_move = move
+            max_score = score_increment
 
+    # MOVES = [LEFT, RIGHT, UP, DOWN]
     return make_move(board,best_move)
 
 # def evaluate_move(board, move, depth=4):
@@ -133,14 +146,13 @@ def make_max_scoring_move(board):
 #
 #         evaluate_move(board, depth=depth-1)
 
-
 if __name__ == '__main__':
     num_iterations = 10000
 
-    strategies = [(make_max_scoring_move,'max_scoring_move.csv'), (make_random_move,'random_move.csv'),
-                  (make_max_scoring_move, 'max_scoring_move.csv')
+    strategies = [(make_max_scoring_move,'max_scoring_move.csv')]
+        # , (make_random_move,'random_move.csv'),
+        #           (make_max_scoring_move, 'max_scoring_move.csv')
 
-                ]
 
     if len(sys.argv) > 1:
         num_iterations = int(sys.argv[2])
@@ -148,7 +160,7 @@ if __name__ == '__main__':
     for strategy,file_name in strategies:
         # prepare results file with appropriate headings
         with open(file_name, 'w') as results_file:
-            results_file.write("Game_Won,Max_block,Num_moves,Score\n")
+            results_file.write("Game_Won,Max_block,Num_moves,Score,Num_Smashes\n")
 
         for iter in range(0,num_iterations):
             board = new_board(board_size=4)
@@ -156,11 +168,24 @@ if __name__ == '__main__':
             score = 0
             smashes = 0
             while not game_lost(board):
-                board, number_smashes, score_increment = strategy(board)
+                #  board, number_smashes, score_increment
+                # show_board(board)
+                board2, number_smashes, score_increment, move = strategy(board[:])
+                # useless move?
+
+                while board2 == board:
+                    board2, number_smashes, score_increment, move = make_move(board2,random.choice(MOVES))
+
+                # print 'making move: ', 'LEFT' if move==MOVES[0] else 'RIGHT' if move==MOVES[1] else 'UP' if move == MOVES[2] else 'DOWN'
+                board = board2
+                # show_board(board)
+                # sleep(5)
+
                 score += score_increment
                 smashes += number_smashes
                 num_moves_made += 1
                 board = random_block_spawn(board)
+
                 # if game_won(board):
                 #     break
 
