@@ -144,30 +144,32 @@ def monotonicity_strategy(board):
 
     return make_move(board, best_move)
 
+
 def most_monotonic_corner(board):
     '''
     Evaluates the quality of a board based on the monotonicity of it's tiles towards a corner
     :param board:
     :return: the lowest scoring corner, in terms of monotonicity. A board with a lower score is more monotonous.
     '''
-    board =[3, 2, 1, 0, 4, 3, 2, 1, 5, 4, 3, 2, 4, 5, 4, 3]
     left_limits = [BOARD_SIZE * i for i in range(0, BOARD_SIZE)]
     bottom_limits = [i for i in range(BOARD_SIZE * (BOARD_SIZE-1), BOARD_SIZE*BOARD_SIZE)]
     right_limits = [(BOARD_SIZE * i)-1 for i in range(1, BOARD_SIZE+1)]
     top_limits = range(0,BOARD_SIZE)
 
-    best_corner = min(
-        monotonicity(board,left_limits, bottom_limits, -1, BOARD_SIZE), # bottom left corner
-        monotonicity(board,right_limits, bottom_limits, 1, BOARD_SIZE), # bottom right corner
-        monotonicity(board,right_limits, top_limits, 1, -1*BOARD_SIZE), # top right corner
-        monotonicity(board,left_limits, top_limits, -1, -1*BOARD_SIZE) # top left corner
-    )
+    best_corner = float('Inf')
+    corners = [(left_limits, bottom_limits, -1, BOARD_SIZE),(right_limits, bottom_limits, 1, BOARD_SIZE),
+               (right_limits, top_limits, 1, -1*BOARD_SIZE), (left_limits, top_limits, -1, -1*BOARD_SIZE)]
+    for corner in corners:
+        l1, l2, x, y = corner
+        score = monotonicity(board, l1, l2, x, y, best_corner)
+        # best possible score, no need to test more corners
+        if score == 0: return score
+
+        best_corner = min(score, best_corner)
 
     return best_corner
-    ## BottomLeftCorner
 
-
-def monotonicity(board, limits1, limits2, xDelta, yDelta):
+def monotonicity(board, limits1, limits2, xDelta, yDelta, minScore=float('Inf')):
     '''
     Calculates the monotonicity of a board, towards a given corner. A corner is detected by an index that
     appears in both limits. The xDelta is the direction of change of indices along the x axis. The yDelta is along
@@ -190,6 +192,9 @@ def monotonicity(board, limits1, limits2, xDelta, yDelta):
     '''
     score = 0
     for x,i in enumerate(board):
+        # this run will be no better than an already run score, just return
+        if score == minScore:
+            break
         # skip the corner
         if x in limits1 and x in limits2:
             continue
@@ -208,7 +213,7 @@ def monotonicity(board, limits1, limits2, xDelta, yDelta):
 if __name__ == '__main__':
     num_iterations = 10000
 
-    strategies = [(make_max_scoring_move,'max_scoring_move.csv'), (monotonicity_strategy,'most_monotonic_move.csv')]
+    strategies = [(monotonicity_strategy,'most_monotonic_move.csv')]
         # , (make_random_move,'random_move.csv'),
         #           (make_max_scoring_move, 'max_scoring_move.csv')
 
