@@ -131,25 +131,84 @@ def make_max_scoring_move(board):
     # MOVES = [LEFT, RIGHT, UP, DOWN]
     return make_move(board,best_move)
 
-# def evaluate_move(board, move, depth=4):
-#     if board.game_won: return float("Infinity")
-#     # this game ends in loss
-#     elif board.game_over: return float("-Infinity")
-#     # stops recursion
-#     elif depth < 0:
-#         return board.score
-#
-#     possible_new_cells = possible_new_pieces()
-#     for piece, cell, probability in possible_new_cells:
-#
-#     for move in MOVES:
-#
-#         evaluate_move(board, depth=depth-1)
+
+def monotonicity_strategy(board):
+    best_move = random.choice(MOVES)
+    best_monotonicity = float('Inf')
+    for move in MOVES:
+        board2 = make_move(board[:],move)[0]
+        mon = most_monotonic_corner(board2)
+        if mon < best_monotonicity:
+            best_move = move
+            best_monotonicity = mon
+
+    return make_move(board, best_move)
+
+def most_monotonic_corner(board):
+    '''
+    Evaluates the quality of a board based on the monotonicity of it's tiles towards a corner
+    :param board:
+    :return: the lowest scoring corner, in terms of monotonicity. A board with a lower score is more monotonous.
+    '''
+    board =[3, 2, 1, 0, 4, 3, 2, 1, 5, 4, 3, 2, 4, 5, 4, 3]
+    left_limits = [BOARD_SIZE * i for i in range(0, BOARD_SIZE)]
+    bottom_limits = [i for i in range(BOARD_SIZE * (BOARD_SIZE-1), BOARD_SIZE*BOARD_SIZE)]
+    right_limits = [(BOARD_SIZE * i)-1 for i in range(1, BOARD_SIZE+1)]
+    top_limits = range(0,BOARD_SIZE)
+
+    best_corner = min(
+        monotonicity(board,left_limits, bottom_limits, -1, BOARD_SIZE), # bottom left corner
+        monotonicity(board,right_limits, bottom_limits, 1, BOARD_SIZE), # bottom right corner
+        monotonicity(board,right_limits, top_limits, 1, -1*BOARD_SIZE), # top right corner
+        monotonicity(board,left_limits, top_limits, -1, -1*BOARD_SIZE) # top left corner
+    )
+
+    return best_corner
+    ## BottomLeftCorner
+
+
+def monotonicity(board, limits1, limits2, xDelta, yDelta):
+    '''
+    Calculates the monotonicity of a board, towards a given corner. A corner is detected by an index that
+    appears in both limits. The xDelta is the direction of change of indices along the x axis. The yDelta is along
+    the y-axis.
+    Here is a perfectly monotonous board (towards the bottom right corner)
+    3 2 1 0
+    4 3 2 1
+    5 4 3 2
+    6 5 4 3
+
+    A score is calculated based on how many cells are out of place with respect to each other. So, for instance,
+    if the square (3,0) was not 6 as above, but was 4, the board would score 2 - one for each of the 5s surrounding
+    (3,0)
+    :param board: the board to score
+    :param limits1: side bound
+    :param limits2: upper or lower bound
+    :param xDelta: what direction to compare, up or down
+    :param yDelta: what direction to compare, left or right.
+    :return: the number of cells that are out of place in relation to each other.
+    '''
+    score = 0
+    for x,i in enumerate(board):
+        # skip the corner
+        if x in limits1 and x in limits2:
+            continue
+
+        if x in limits1:
+            if i > board[x+yDelta]: score += 1
+        elif x in limits2:
+            if i > board[x+xDelta]: score += 1
+        else:
+            if i > board[x+xDelta]: score+=1
+            if i > board[x+yDelta]: score+=1
+
+    return score
+
 
 if __name__ == '__main__':
     num_iterations = 10000
 
-    strategies = [(make_max_scoring_move,'max_scoring_move.csv')]
+    strategies = [(make_max_scoring_move,'max_scoring_move.csv'), (monotonicity_strategy,'most_monotonic_move.csv')]
         # , (make_random_move,'random_move.csv'),
         #           (make_max_scoring_move, 'max_scoring_move.csv')
 
@@ -172,7 +231,6 @@ if __name__ == '__main__':
                 # show_board(board)
                 board2, number_smashes, score_increment, move = strategy(board[:])
                 # useless move?
-
                 while board2 == board:
                     board2, number_smashes, score_increment, move = make_move(board2,random.choice(MOVES))
 
